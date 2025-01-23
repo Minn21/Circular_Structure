@@ -30,6 +30,7 @@ def register_callbacks(app):
     )
     def analyze_structure(n_clicks, radius, num_columns, num_floors, floor_height, material_type, 
                          live_load, wind_speed, beam_design, column_design, load_intensity):
+        # Validate inputs
         if None in [radius, num_columns, num_floors, floor_height, material_type, live_load, 
                     wind_speed, beam_design, column_design, load_intensity]:
             return dash.no_update, "Please fill in all fields."
@@ -38,16 +39,24 @@ def register_callbacks(app):
             return dash.no_update, "Invalid input values: radius, num_columns, num_floors, floor_height must be positive, and live_load, wind_speed must be non-negative."
         
         try:
+            # Fetch material properties
             material = MATERIAL_PROPERTIES[material_type]
+            
+            # Calculate total height and live load
             total_height = num_floors * floor_height
             total_live_load = live_load * math.pi * radius**2 * num_floors
+            
+            # Calculate wind force
             wind_force = calculate_wind_load(radius, total_height, wind_speed)
-
+            
             # Calculate beam span length based on number of columns
             beam_span = 2 * radius * math.sin(math.pi / num_columns)
+            
+            # Calculate beam and column properties
             beam_props = calculate_beam_properties(beam_design, beam_span, material)
             column_props = calculate_column_properties(column_design, floor_height, material)
-
+            
+            # Create 3D visualization
             fig = go.Figure()
 
             # Add columns with hover information and stress distribution
@@ -232,63 +241,64 @@ def register_callbacks(app):
             # Get material standards recommendation
             standards_recommendation = get_material_standards(radius, num_floors, floor_height, wind_speed, live_load)
 
+            # Format results
             results = html.Div(
-    [
-        html.H3("Analysis Results"),
-        html.Div(
-            [
-                html.Div(
-                    [
-                        html.H4("Building Parameters"),
-                        html.P(f"Total Height: {total_height:.2f} m"),
-                        html.P(f"Number of Floors: {num_floors}"),
-                        html.P(f"Number of Columns: {num_columns}"),
-                        html.P(f"Floor Height: {floor_height} m"),
-                        html.P(f"Building Radius: {radius} m"),
-                        html.P(f"Beam Span Length: {beam_span:.2f} m"),
-                    ],
-                    className='results-section'
-                ),
-                
-                html.Div(
-                    [
-                        html.H4("Loading Information"),
-                        html.P(f"Total Live Load: {total_live_load/1000:.2f} kN"),
-                        html.P(f"Live Load per Floor: {live_load} kN/m²"),
-                        html.P(f"Total Wind Force: {wind_force/1000:.2f} kN"),
-                        html.P(f"Wind Speed: {wind_speed} m/s"),
-                    ],
-                    className='results-section'
-                ),
-                
-                html.Div(
-                    [
-                        html.H4("Structural Details"),
-                        html.P(f"Material: {material_type.capitalize()}"),
-                        html.P(f"Beam Type: {beam_design.capitalize()}"),
-                        html.P(f"Column Type: {column_design.capitalize()}"),
-                        html.Hr(),
-                        html.P(
-                            "Hover over beams and columns in the 3D model to see detailed structural properties",
-                            style={'fontStyle': 'italic', 'color': '#666'}
-                        )
-                    ],
-                    className='results-section'
-                ),
+                [
+                    html.H3("Analysis Results"),
+                    html.Div(
+                        [
+                            html.Div(
+                                [
+                                    html.H4("Building Parameters"),
+                                    html.P(f"Total Height: {total_height:.2f} m"),
+                                    html.P(f"Number of Floors: {num_floors}"),
+                                    html.P(f"Number of Columns: {num_columns}"),
+                                    html.P(f"Floor Height: {floor_height} m"),
+                                    html.P(f"Building Radius: {radius} m"),
+                                    html.P(f"Beam Span Length: {beam_span:.2f} m"),
+                                ],
+                                className='results-section'
+                            ),
+                            
+                            html.Div(
+                                [
+                                    html.H4("Loading Information"),
+                                    html.P(f"Total Live Load: {total_live_load/1000:.2f} kN"),
+                                    html.P(f"Live Load per Floor: {live_load} kN/m²"),
+                                    html.P(f"Total Wind Force: {wind_force/1000:.2f} kN"),
+                                    html.P(f"Wind Speed: {wind_speed} m/s"),
+                                ],
+                                className='results-section'
+                            ),
+                            
+                            html.Div(
+                                [
+                                    html.H4("Structural Details"),
+                                    html.P(f"Material: {material_type.capitalize()}"),
+                                    html.P(f"Beam Type: {beam_design.capitalize()}"),
+                                    html.P(f"Column Type: {column_design.capitalize()}"),
+                                    html.Hr(),
+                                    html.P(
+                                        "Hover over beams and columns in the 3D model to see detailed structural properties",
+                                        style={'fontStyle': 'italic', 'color': '#666'}
+                                    )
+                                ],
+                                className='results-section'
+                            ),
 
-                html.Div(
-                    [
-                        html.H4("Material Standards Analysis"),
-                        html.Pre(standards_recommendation)
-                    ],
-                    className='results-section'
-                )
-            ],
-            style={'display': 'flex', 'flexWrap': 'wrap', 'gap': '20px'}
-        )
-    ],
-    style={'backgroundColor': '#f5f5f5', 'padding': '20px', 'borderRadius': '5px'}
-)
+                            html.Div(
+                                [
+                                    html.H4("Material Standards Analysis"),
+                                    html.Pre(standards_recommendation)
+                                ],
+                                className='results-section'
+                            )
+                        ],
+                        style={'display': 'flex', 'flexWrap': 'wrap', 'gap': '20px'}
+                    )
+                ],
+                style={'backgroundColor': '#f5f5f5', 'padding': '20px', 'borderRadius': '5px'}
+            )
 
             return fig, results
 
