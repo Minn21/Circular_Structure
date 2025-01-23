@@ -1,12 +1,14 @@
 from dash import dcc, html
 from config import MATERIAL_PROPERTIES, SEISMIC_ZONES, BEAM_PROPERTIES, COLUMN_PROPERTIES
 
-layout = html.Div([
-    html.H1("Circular Building Structural Analysis", style={'textAlign': 'center', 'color': '#2c3e50', 'marginBottom': '30px'}),
-    
-    html.Div([
-        html.Div([
-            html.Div([
+layout = html.Div(
+    className="main-container",
+    children=[
+        html.H1("Circular Building Structural Analysis"),
+        
+        html.Div(
+            className="input-container",
+            children=[
                 html.Label("Building Radius (m)"),
                 dcc.Input(id='building-radius', type='number', value=20, min=1, step=0.1, className='dash-input'),
 
@@ -74,13 +76,20 @@ layout = html.Div([
                 ),
 
                 html.Button("Analyze", id='analyze-button', n_clicks=0, className='analyze-button')
-            ], className='input-container'),
-        ], style={'width': '45%', 'display': 'inline-block', 'verticalAlign': 'top'}),
+            ]
+        ),
 
-        html.Div(id='analysis-results', style={'width': '50%', 'display': 'inline-block', 'paddingLeft': '20px'})
-    ]),
+        html.Div(
+            id='analysis-results',
+            className="results-container",
+            style={'display': 'flex', 'flexWrap': 'wrap', 'gap': '20px'}
+        ),
 
-    html.Div([
-        dcc.Graph(id='building-visualization', style={'marginTop': '20px'})
-    ], className='graph-container')
-])
+        html.Div(
+            className="graph-container",
+            children=[
+                dcc.Graph(id='building-visualization')
+            ]
+        )
+    ]
+)

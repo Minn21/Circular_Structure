@@ -2,10 +2,9 @@ import dash
 from dash import html
 from components import layout
 from callbacks import register_callbacks
-app = dash.Dash(__name__, external_stylesheets=['styles.css'])
 
 # Initialize the Dash app
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, external_stylesheets=['styles.css'])
 
 # Set the layout of the app
 app.layout = layout

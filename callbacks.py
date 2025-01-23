@@ -1,9 +1,10 @@
-from dash import Input, Output, State
+import dash
+from dash import Input, Output, State, html
 import plotly.graph_objects as go
 import numpy as np
 import math
 from config import MATERIAL_PROPERTIES, BEAM_PROPERTIES, COLUMN_PROPERTIES
-from utils import calculate_seismic_load, calculate_wind_load, calculate_beam_properties, calculate_column_properties
+from utils import calculate_seismic_load, calculate_wind_load, calculate_beam_properties, calculate_column_properties, get_material_standards
 import logging
 
 # Initialize logging
@@ -135,7 +136,7 @@ def register_callbacks(app):
                     showlegend=False
                 ))
 
-            # In analyze_structure callback, replace the animation section:
+            # Animation logic
             frames = []
             for t in np.linspace(0, 2 * np.pi, 30):
                 frame_data = []
@@ -182,7 +183,7 @@ def register_callbacks(app):
                 
                 frames.append(go.Frame(data=frame_data, name=f'frame_{t}'))
 
-                    # Update animation settings
+            # Update animation settings
             fig.update_layout(
                 updatemenus=[{
                     'type': 'buttons',
@@ -228,10 +229,16 @@ def register_callbacks(app):
 
             fig.frames = frames
 
-            results = html.Div([
-                html.H3("Analysis Results"),
-                html.Div([
-                    html.Div([
+            # Get material standards recommendation
+            standards_recommendation = get_material_standards(radius, num_floors, floor_height, wind_speed, live_load)
+
+            results = html.Div(
+    [
+        html.H3("Analysis Results"),
+        html.Div(
+            [
+                html.Div(
+                    [
                         html.H4("Building Parameters"),
                         html.P(f"Total Height: {total_height:.2f} m"),
                         html.P(f"Number of Floors: {num_floors}"),
@@ -239,32 +246,49 @@ def register_callbacks(app):
                         html.P(f"Floor Height: {floor_height} m"),
                         html.P(f"Building Radius: {radius} m"),
                         html.P(f"Beam Span Length: {beam_span:.2f} m"),
-                    ], className='results-section'),
-                    
-                    html.Div([
+                    ],
+                    className='results-section'
+                ),
+                
+                html.Div(
+                    [
                         html.H4("Loading Information"),
                         html.P(f"Total Live Load: {total_live_load/1000:.2f} kN"),
                         html.P(f"Live Load per Floor: {live_load} kN/m²"),
                         html.P(f"Total Wind Force: {wind_force/1000:.2f} kN"),
                         html.P(f"Wind Speed: {wind_speed} m/s"),
-                    ], className='results-section'),
-                    
-                    html.Div([
+                    ],
+                    className='results-section'
+                ),
+                
+                html.Div(
+                    [
                         html.H4("Structural Details"),
                         html.P(f"Material: {material_type.capitalize()}"),
                         html.P(f"Beam Type: {beam_design.capitalize()}"),
                         html.P(f"Column Type: {column_design.capitalize()}"),
                         html.Hr(),
-                        html.P("Hover over beams and columns in the 3D model to see detailed structural properties", 
-                              style={'fontStyle': 'italic', 'color': '#666'})
-                    ], className='results-section'),
+                        html.P(
+                            "Hover over beams and columns in the 3D model to see detailed structural properties",
+                            style={'fontStyle': 'italic', 'color': '#666'}
+                        )
+                    ],
+                    className='results-section'
+                ),
 
-                    html.Div([
+                html.Div(
+                    [
                         html.H4("Material Standards Analysis"),
                         html.Pre(standards_recommendation)
-                    ], className='results-section')
-                ], style={'display': 'flex', 'justifyContent': 'space-between', 'flexWrap': 'wrap'})
-            ], style={'backgroundColor': '#f5f5f5', 'padding': '20px', 'borderRadius': '5px'})
+                    ],
+                    className='results-section'
+                )
+            ],
+            style={'display': 'flex', 'flexWrap': 'wrap', 'gap': '20px'}
+        )
+    ],
+    style={'backgroundColor': '#f5f5f5', 'padding': '20px', 'borderRadius': '5px'}
+)
 
             return fig, results
 
