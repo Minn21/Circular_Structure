@@ -26,7 +26,7 @@ MATERIAL_PROPERTIES = {
     }
 }
 
-# Add seismic zone parameters
+# Seismic zone parameters
 SEISMIC_ZONES = {
     'Zone I': {'zone_factor': 0.1, 'description': 'Very Low Damage Risk Zone'},
     'Zone II': {'zone_factor': 0.16, 'description': 'Low Damage Risk Zone'},
@@ -35,7 +35,7 @@ SEISMIC_ZONES = {
     'Zone V': {'zone_factor': 0.48, 'description': 'Very High Damage Risk Zone'}
 }
 
-# Define structural element properties based on design type
+# Structural element properties based on design type
 BEAM_PROPERTIES = {
     'rectangular': {
         'min_width': 0.2,  # m
