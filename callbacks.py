@@ -1,5 +1,6 @@
 import dash
 from dash import Input, Output, State, html
+import dash_bootstrap_components as dbc
 import plotly.graph_objects as go
 import numpy as np
 import math
@@ -241,66 +242,63 @@ def register_callbacks(app):
             # Get material standards recommendation
             standards_recommendation = get_material_standards(radius, num_floors, floor_height, wind_speed, live_load)
 
-            # Format results
-            results = html.Div(
-                [
-                    html.H3("Analysis Results"),
-                    html.Div(
-                        [
-                            html.Div(
-                                [
-                                    html.H4("Building Parameters"),
-                                    html.P(f"Total Height: {total_height:.2f} m"),
-                                    html.P(f"Number of Floors: {num_floors}"),
-                                    html.P(f"Number of Columns: {num_columns}"),
-                                    html.P(f"Floor Height: {floor_height} m"),
-                                    html.P(f"Building Radius: {radius} m"),
-                                    html.P(f"Beam Span Length: {beam_span:.2f} m"),
-                                ],
-                                className='results-section'
-                            ),
-                            
-                            html.Div(
-                                [
-                                    html.H4("Loading Information"),
-                                    html.P(f"Total Live Load: {total_live_load/1000:.2f} kN"),
-                                    html.P(f"Live Load per Floor: {live_load} kN/m²"),
-                                    html.P(f"Total Wind Force: {wind_force/1000:.2f} kN"),
-                                    html.P(f"Wind Speed: {wind_speed} m/s"),
-                                ],
-                                className='results-section'
-                            ),
-                            
-                            html.Div(
-                                [
-                                    html.H4("Structural Details"),
-                                    html.P(f"Material: {material_type.capitalize()}"),
-                                    html.P(f"Beam Type: {beam_design.capitalize()}"),
-                                    html.P(f"Column Type: {column_design.capitalize()}"),
-                                    html.Hr(),
-                                    html.P(
-                                        "Hover over beams and columns in the 3D model to see detailed structural properties",
-                                        style={'fontStyle': 'italic', 'color': '#666'}
-                                    )
-                                ],
-                                className='results-section'
-                            ),
-
-                            html.Div(
-                                [
-                                    html.H4("Material Standards Analysis"),
-                                    html.Pre(standards_recommendation)
-                                ],
-                                className='results-section'
-                            )
-                        ],
-                        style={'display': 'flex', 'flexWrap': 'wrap', 'gap': '20px'}
-                    )
-                ],
-                style={'backgroundColor': '#f5f5f5', 'padding': '20px', 'borderRadius': '5px'}
-            )
+            results = dbc.Container([
+                html.H3("Analysis Results", className="mb-4"),
+                dbc.Row([
+                    dbc.Col([
+                        dbc.Card([
+                            dbc.CardHeader("Building Parameters"),
+                            dbc.CardBody([
+                                html.P(f"Total Height: {total_height:.2f} m"),
+                                html.P(f"Number of Floors: {num_floors}"),
+                                html.P(f"Number of Columns: {num_columns}"),
+                                html.P(f"Floor Height: {floor_height} m"),
+                                html.P(f"Building Radius: {radius} m"),
+                            ])
+                        ], className="mb-3")
+                    ], width=6, md=3),
+                    
+                    dbc.Col([
+                        dbc.Card([
+                            dbc.CardHeader("Loading Information"),
+                            dbc.CardBody([
+                                html.P(f"Total Live Load: {total_live_load/1000:.2f} kN"),
+                                html.P(f"Live Load per Floor: {live_load} kN/m²"),
+                                html.P(f"Total Wind Force: {wind_force/1000:.2f} kN"),
+                                html.P(f"Wind Speed: {wind_speed} m/s"),
+                            ])
+                        ], className="mb-3")
+                    ], width=6, md=3),
+                    
+                    dbc.Col([
+                        dbc.Card([
+                            dbc.CardHeader("Structural Details"),
+                            dbc.CardBody([
+                                html.P(f"Material: {material_type.capitalize()}"),
+                                html.P(f"Beam Type: {beam_design.capitalize()}"),
+                                html.P(f"Column Type: {column_design.capitalize()}"),
+                                dbc.Alert(
+                                    "Hover over beams and columns in the 3D model to see detailed structural properties", 
+                                    color="info", 
+                                    className="mt-3"
+                                )
+                            ])
+                        ], className="mb-3")
+                    ], width=6, md=3),
+                    
+                    dbc.Col([
+                        dbc.Card([
+                            dbc.CardHeader("Material Standards Analysis"),
+                            dbc.CardBody([
+                                html.Pre(standards_recommendation)
+                            ])
+                        ], className="mb-3")
+                    ], width=6, md=3)
+                ])
+            ], fluid=True)
 
             return fig, results
+
 
         except Exception as e:
             logger.error(f"Error during analysis: {str(e)}")
