@@ -3,6 +3,10 @@ import numpy as np
 import plotly.graph_objects as go
 from config import MATERIAL_PROPERTIES, SEISMIC_ZONES, BEAM_PROPERTIES, COLUMN_PROPERTIES
 from utils import calculate_seismic_load, calculate_wind_load, calculate_beam_properties, calculate_column_properties, get_material_standards
+import tensorflow as tf
+
+# Load the trained TensorFlow model
+model = tf.keras.models.load_model('stress_prediction_model.h5')
 
 # Streamlit app
 st.title("Circular Building Structural Analysis")
@@ -23,6 +27,9 @@ load_intensity = st.sidebar.slider("Load Intensity (kN)", min_value=0, max_value
 beam_design = st.sidebar.selectbox("Beam Design", options=list(BEAM_PROPERTIES.keys()), index=0)
 column_design = st.sidebar.selectbox("Column Design", options=list(COLUMN_PROPERTIES.keys()), index=1)
 show_deformation = st.sidebar.checkbox("Show Deformation", value=False)
+
+# Fetch material properties
+material = MATERIAL_PROPERTIES[material_type]
 
 # Analyze button
 if st.sidebar.button("Analyze"):
@@ -48,6 +55,25 @@ if st.sidebar.button("Analyze"):
     beam_props = calculate_beam_properties(beam_design, beam_span, material)
     column_props = calculate_column_properties(column_design, floor_height, material)
     
+     # Prepare input data for the TensorFlow model
+    input_data = np.array([
+        [
+            radius,               # Feature 1: Building radius
+            num_floors,           # Feature 2: Number of floors
+            floor_height,         # Feature 3: Floor height
+            live_load,            # Feature 4: Live load
+            wind_speed,           # Feature 5: Wind speed
+            material['density'],  # Feature 6: Material density
+            material['elastic_modulus'],  # Feature 7: Material elastic modulus
+            beam_span,            # Feature 8: Beam span length
+            total_height,         # Feature 9: Total building height
+            total_weight          # Feature 10: Total building weight
+        ]
+    ])
+    
+    # Predict stress using the TensorFlow model
+    predicted_stress = model.predict(input_data)
+
     # Create 3D visualization
     fig = go.Figure()
 
@@ -222,7 +248,9 @@ if st.sidebar.button("Analyze"):
     st.write(f"Material: {material_type.capitalize()}")
     st.write(f"Beam Type: {beam_design.capitalize()}")
     st.write(f"Column Type: {column_design.capitalize()}")
-    st.info("Hover over beams and columns in the 3D model to see detailed structural properties")
+    # Display the predicted stress
+    st.subheader("TensorFlow Stress Prediction")
+    st.write(f"Predicted Stress: {predicted_stress[0][0]:.2f} kN/m²")
 
     # Get material standards recommendation
     standards_recommendation = get_material_standards(radius, num_floors, floor_height, wind_speed, live_load)
