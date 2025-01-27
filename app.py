@@ -5,8 +5,11 @@ from config import MATERIAL_PROPERTIES, SEISMIC_ZONES, BEAM_PROPERTIES, COLUMN_P
 from utils import calculate_seismic_load, calculate_wind_load, calculate_beam_properties, calculate_column_properties, get_material_standards
 import tensorflow as tf
 
-# Load the trained TensorFlow model
-model = tf.keras.models.load_model('stress_prediction_model.h5')
+# Load the trained TensorFlow model with custom objects
+model = tf.keras.models.load_model(
+    'stress_prediction_model.h5',
+    custom_objects={'mse': tf.keras.losses.MeanSquaredError()}
+)
 
 # Streamlit app
 st.title("Circular Building Structural Analysis")
